@@ -13,7 +13,7 @@ class ProductDetailPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white, // Ensures the text color is white
         title: Text(
-          product?.title ?? 'Product Detail',
+          product?.name ?? 'Product Detail',
           style: TextStyle(
             color: Colors.white,
           ),
