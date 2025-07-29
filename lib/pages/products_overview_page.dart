@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/components/badgee.dart';
 import 'package:shop/components/product_grid.dart';
+import 'package:shop/models/cart.dart';
 import 'package:shop/models/product_list.dart';
 
 enum FilterOptions {
@@ -54,17 +55,21 @@ class _ProductsOverviewPageState extends State<ProductsOverviewPage> {
               },
               iconColor: Colors.white,
             ),
-            Badgee(
-              value: "2",
+            Consumer<Cart>(
               child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.shopping_cart,
-                  color: Colors.white,
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.shopping_cart,
+                    color: Colors.white,
+                  ),
                 ),
+              builder: (ctx, cart, child) => Badgee(
+                value: cart.itemsCount.toString(),
+                child: child!,
               ),
             ),
-          ]),
+          ],
+      ),
       body: ProductGrid(_showFavoriteOnly),
     );
   }
