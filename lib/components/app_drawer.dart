@@ -13,6 +13,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Bem Vindo Usuário!'),
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
+            automaticallyImplyLeading: false,
           ),
           Divider(),
           ListTile(
