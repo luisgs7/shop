@@ -27,6 +27,7 @@ class ProductList with ChangeNotifier {
   //   _showFavoriteOnly = false;
   //   notifyListeners();
   // }
+  int get itemsCount => _items.length;
 
   void addProduct(Product product) {
     _items.add(product);
