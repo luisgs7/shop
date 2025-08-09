@@ -42,14 +42,25 @@ class ProductGridItem extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           trailing: IconButton(
-            onPressed: () {
-              cart.addItem(product);
-              print(cart.itemsCount);
-            },
             icon: Icon(
               Icons.shopping_cart,
             ),
             color: Theme.of(context).colorScheme.secondary,
+            onPressed: () {
+              cart.addItem(product);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Produto adicionado com sucesso!'),
+                  duration: Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'DESFAZER',
+                    onPressed: () {
+                      cart.removeSingleItem(product.id);
+                    },
+                  ),
+                )
+              );
+            },
           ),
         ),
       ),
