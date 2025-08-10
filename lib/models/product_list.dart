@@ -1,14 +1,18 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shop/data/dummy_data.dart';
 import 'package:shop/models/product.dart';
 
 class ProductList with ChangeNotifier {
+  final baseUrl = 'https://shop-cod3r-7f3fb-default-rtdb.firebaseio.com/';
   List<Product> _items = dummyProducts;
 
   List<Product> get items => [..._items];
-  List<Product> get favoriteItems => _items.where((prod) => prod.isFavorite).toList();
+  List<Product> get favoriteItems =>
+      _items.where((prod) => prod.isFavorite).toList();
 
   // Atualiza de forma global os dados no app
   // bool _showFavoriteOnly = false;
@@ -49,8 +53,31 @@ class ProductList with ChangeNotifier {
   }
 
   void addProduct(Product product) {
-    _items.add(product);
-    notifyListeners();
+    final future = http.post(
+      Uri.parse('${baseUrl}/products.json'),
+      body: jsonEncode(
+        {
+          'name': product.name,
+          'description': product.description,
+          'price': product.price,
+          'imageUrl': product.imageUrl,
+          'isFavorite': product.isFavorite,
+        },
+      ),
+    );
+    future.then((response) {
+      print(jsonDecode(response.body));
+      final id = jsonDecode(response.body)['name'];
+      _items.add(Product(
+        id: id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        isFavorite: product.isFavorite,
+      ));
+      notifyListeners();
+    });
   }
 
   void updateProduct(Product product) {
@@ -65,7 +92,7 @@ class ProductList with ChangeNotifier {
   void removeProduct(Product product) {
     int index = _items.indexWhere((p) => p.id == product.id);
 
-    if (index >= 0){
+    if (index >= 0) {
       _items.removeWhere((p) => p.id == product.id);
       notifyListeners();
     }
