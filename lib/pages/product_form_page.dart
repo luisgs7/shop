@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shop/models/product.dart';
+import 'package:shop/models/product_list.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -60,18 +62,28 @@ class _ProductFormPageState extends State<ProductFormPage> {
     }
 
     _formKey.currentState?.save();
-    final newProduct = Product(
-      id: Random().nextDouble().toString(),
-      name: _formData['name'] as String,
-      description: _formData['description'] as String,
-      price: _formData['price'] as double,
-      imageUrl: _formData['imageUrl'] as String,
-    );
-    print(newProduct.id);
-    print(newProduct.name);
-    print(newProduct.description);
-    print(newProduct.price);
-    print(newProduct.imageUrl);
+
+    Provider.of<ProductList>(
+      context,
+      listen: false,
+    ).saveProductFromData(_formData);
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void didChangeDependencies() {
+    final arg = ModalRoute.of(context)?.settings.arguments;
+
+    if (arg != null) {
+      final product = arg as Product;
+      _formData['id'] = product.id;
+      _formData['name'] = product.name;
+      _formData['description'] = product.description;
+      _formData['price'] = product.price;
+      _formData['imageUrl'] = product.imageUrl;
+
+      _imageUrlController.text = product.imageUrl;
+    }
   }
 
   @override
@@ -95,6 +107,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             child: ListView(
               children: [
                 TextFormField(
+                  initialValue: _formData['name']?.toString(),
                     decoration: InputDecoration(
                         labelText: 'Nome',
                         enabledBorder: UnderlineInputBorder(
@@ -119,32 +132,33 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       return null;
                     }),
                 TextFormField(
-                    decoration: InputDecoration(
-                        labelText: 'Preço',
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        )),
-                    focusNode: priceFocus,
-                    keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
-                    textInputAction: TextInputAction.next,
-                    onSaved: (price) =>
-                        _formData['price'] = double.parse(price ?? '0'),
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(descriptionFocus);
-                    },
-                    validator: (_price) {
-                      final priceString = _price ?? '';
-                      final price = double.tryParse(priceString) ?? -1;
+                  initialValue: _formData['price']?.toString(),
+                  decoration: InputDecoration(
+                      labelText: 'Preço',
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      )),
+                  focusNode: priceFocus,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  textInputAction: TextInputAction.next,
+                  onSaved: (price) =>
+                      _formData['price'] = double.parse(price ?? '0'),
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(descriptionFocus);
+                  },
+                  validator: (_price) {
+                    final priceString = _price ?? '';
+                    final price = double.tryParse(priceString) ?? -1;
 
-                      if (price <= 0) {
-                        return 'Informe um preço válido.';
-                      }
+                    if (price <= 0) {
+                      return 'Informe um preço válido.';
+                    }
 
-                      return null;
-                    },
-                  ),
+                    return null;
+                  },
+                ),
                 TextFormField(
+                  initialValue: _formData['description']?.toString(),
                   decoration: InputDecoration(
                       labelText: 'Descrição',
                       enabledBorder: UnderlineInputBorder(
