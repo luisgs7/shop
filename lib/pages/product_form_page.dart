@@ -31,7 +31,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.dispose();
     priceFocus.dispose();
     descriptionFocus.dispose();
-    
+
     _imageUrlController.removeListener(updateImage);
     _imageUrlFocus.dispose();
   }
@@ -39,6 +39,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
   void updateImage() {
     print("updateImage...");
     setState(() {});
+  }
+
+  bool isValidImageUrl(String url) {
+    bool isValidUrl = Uri.tryParse(url)?.hasAbsolutePath ?? false;
+    bool endsWithFile = url.toLowerCase().endsWith('.png') ||
+        url.toLowerCase().endsWith('.jpg') ||
+        url.toLowerCase().endsWith('.jpeg');
+
+    return isValidUrl && endsWithFile;
   }
 
   void _submitForm() {
@@ -56,7 +65,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
       name: _formData['name'] as String,
       description: _formData['description'] as String,
       price: _formData['price'] as double,
-      imageUrl: _formData['imageUrl'] as String,  
+      imageUrl: _formData['imageUrl'] as String,
     );
     print(newProduct.id);
     print(newProduct.name);
@@ -108,8 +117,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       }
 
                       return null;
-                    }
-                    ),
+                    }),
                 TextFormField(
                     decoration: InputDecoration(
                         labelText: 'Preço',
@@ -120,10 +128,22 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                     textInputAction: TextInputAction.next,
-                    onSaved: (price) => _formData['price'] = double.parse(price ?? '0'),
+                    onSaved: (price) =>
+                        _formData['price'] = double.parse(price ?? '0'),
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(descriptionFocus);
-                    }),
+                    },
+                    validator: (_price) {
+                      final priceString = _price ?? '';
+                      final price = double.tryParse(priceString) ?? -1;
+
+                      if (price <= 0) {
+                        return 'Informe um preço válido.';
+                      }
+
+                      return null;
+                    },
+                  ),
                 TextFormField(
                   decoration: InputDecoration(
                       labelText: 'Descrição',
@@ -133,7 +153,21 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   focusNode: descriptionFocus,
                   keyboardType: TextInputType.multiline,
                   maxLines: 3,
-                  onSaved: (description) => _formData['description'] = description ?? '',
+                  onSaved: (description) =>
+                      _formData['description'] = description ?? '',
+                  validator: (_description) {
+                    final description = _description ?? '';
+
+                    if (description.trim().isEmpty) {
+                      return 'Descrição é obrigatória';
+                    }
+
+                    if (description.trim().length < 10) {
+                      return 'Descrição precisa no mínimo de 10 letras.';
+                    }
+
+                    return null;
+                  },
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -149,25 +183,33 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) => _submitForm(),
-                        onSaved: (imageUrl) => _formData['imageUrl'] = imageUrl ?? '',
+                        onSaved: (imageUrl) =>
+                            _formData['imageUrl'] = imageUrl ?? '',
                         controller: _imageUrlController,
+                        validator: (_imageUrl) {
+                          final imageUrl = _imageUrl ?? '';
+
+                          if (!isValidImageUrl(imageUrl)) {
+                            return 'URL inválida';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     Container(
-                      height: 100,
-                      width: 100,
-                      margin: const EdgeInsets.only(top: 10, left: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey, width: 1),
-                      ),
-                      alignment: Alignment.center,
-                      child: _imageUrlController.text.isEmpty
-                      ? const Text('Informe a URL')
-                      : FittedBox(
-                        child: Image.network(_imageUrlController.text),
-                        fit: BoxFit.cover,
-                      )
-                    )
+                        height: 100,
+                        width: 100,
+                        margin: const EdgeInsets.only(top: 10, left: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1),
+                        ),
+                        alignment: Alignment.center,
+                        child: _imageUrlController.text.isEmpty
+                            ? const Text('Informe a URL')
+                            : FittedBox(
+                                child: Image.network(_imageUrlController.text),
+                                fit: BoxFit.cover,
+                              ))
                   ],
                 )
               ],
