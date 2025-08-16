@@ -11,6 +11,8 @@ class AuthForm extends StatefulWidget {
 
 class _AuthFormState extends State<AuthForm> {
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
   AuthMode _authMode = AuthMode.Login;
 
   Map<String, String> _authData = {
@@ -18,7 +20,37 @@ class _AuthFormState extends State<AuthForm> {
     'password': '',
   };
 
-  void _submit() {}
+  bool _isLogin() => _authMode == AuthMode.Login;
+  bool _isSignup() => _authMode == AuthMode.Signup;
+
+  void _switchAuthMode() {
+    setState(() {
+      if(_isLogin()) {
+        _authMode = AuthMode.Signup;
+      } else {
+        _authMode = AuthMode.Login;
+      }
+    });
+  }
+
+  void _submit() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    if(_isLogin()){
+      // login
+    } else {
+      // signup
+    }
+
+    setState(() => _isLoading = false);
+    
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +62,11 @@ class _AuthFormState extends State<AuthForm> {
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
-        height: 320,
+        height: _isLogin() ? 310 : 400,
         width: deviceSize.width * 0.75,
         child: Form(
-            child: Column(
+          key: _formKey,
+          child: Column(
           children: [
             TextFormField(
               decoration: InputDecoration(labelText: 'E-mail'),
@@ -60,11 +93,11 @@ class _AuthFormState extends State<AuthForm> {
                 return null;
               },
             ),
-            if (_authMode == AuthMode.Signup)
+            if (_isSignup())
               TextFormField(
                 decoration: InputDecoration(labelText: 'Confirmar Senha'),
                 obscureText: true,
-                validator: _authMode == AuthMode.Login
+                validator: _isLogin()
                     ? null
                     : (_password) {
                         final password = _password ?? '';
@@ -75,10 +108,13 @@ class _AuthFormState extends State<AuthForm> {
                       },
               ),
             SizedBox(height: 20),
+            if(_isLoading)
+              CircularProgressIndicator()
+            else
             ElevatedButton(
               onPressed: _submit,
               child: Text(
-                _authMode == AuthMode.Login ? 'Entrar' : 'Registrar',
+                _isLogin() ? 'Entrar' : 'Registrar',
               ),
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
@@ -90,6 +126,13 @@ class _AuthFormState extends State<AuthForm> {
                 foregroundColor: Colors.white,
               ),
             ),
+            Spacer(),
+            TextButton(
+              onPressed: _switchAuthMode,
+              child: Text(
+                _isLogin() ? 'DESEJA REGISTRAR?' : 'JÁ POSSUI CONTA?'
+              ),
+            )
           ],
         )),
       ),
