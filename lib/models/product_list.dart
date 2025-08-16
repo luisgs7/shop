@@ -3,10 +3,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop/exceptions/http_exception.dart';
 import 'package:shop/models/product.dart';
 
 class ProductList with ChangeNotifier {
-  final _baseUrl = 'https://shop-cod3r-7f3fb-default-rtdb.firebaseio.com/products';
+  final _baseUrl =
+      'https://shop-cod3r-7f3fb-default-rtdb.firebaseio.com/products';
   List<Product> _items = [];
 
   List<Product> get items => [..._items];
@@ -111,7 +113,7 @@ class ProductList with ChangeNotifier {
             'price': product.price,
             'imageUrl': product.imageUrl,
             'isFavorite': product.isFavorite,
-          }
+          },
         ),
       );
       _items[index] = product;
@@ -119,12 +121,24 @@ class ProductList with ChangeNotifier {
     }
   }
 
-  void removeProduct(Product product) {
+  Future<void> removeProduct(Product product) async {
     int index = _items.indexWhere((p) => p.id == product.id);
-
     if (index >= 0) {
-      _items.removeWhere((p) => p.id == product.id);
+      final product = _items[index];
+      _items.remove(product);
       notifyListeners();
+
+      final response =
+          await http.delete(Uri.parse('${_baseUrl}/${product.id}.json'));
+
+      if (response.statusCode >= 400) {
+        _items.insert(index, product);
+        notifyListeners();
+        throw HttpException(
+          msg: 'Não foi possível remover o produto',
+          statusCode: response.statusCode,
+        );
+      }
     }
   }
 }
