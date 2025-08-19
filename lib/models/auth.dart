@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop/exceptions/auth_exception.dart';
 
 class Auth extends ChangeNotifier {
   static const url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBjaatVrICKkvZUWxTCP57NJzMT1g9-IbI';
@@ -20,16 +21,20 @@ class Auth extends ChangeNotifier {
         },
       ),
     );
-
-    print(jsonDecode(response.body));
+    final body = jsonDecode(response.body);
+    
+    if(body['error'] != null) {
+      throw AuthException(body['error']['message']);
+    }
+    print(body);
   }
 
 
   Future<void> signup(String email, String password) async {
-    await _authenticate(email, password, 'signUp');
+    return await _authenticate(email, password, 'signUp');
   }
 
   Future<void> login(String email, String password) async {
-    await _authenticate(email, password, 'signInWithPassword');
+    return await _authenticate(email, password, 'signInWithPassword');
   }
 }
