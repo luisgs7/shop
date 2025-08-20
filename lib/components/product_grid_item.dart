@@ -32,7 +32,10 @@ class ProductGridItem extends StatelessWidget {
           leading: Consumer<Product>(
             builder: (ctx, product, child) => IconButton(
               onPressed: () {
-                product.ToggleFavorite(auth.token ?? '');
+                product.toggleFavorite(
+                  auth.token ?? '',
+                  auth.userId ?? '',
+                );
               },
               icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -51,18 +54,16 @@ class ProductGridItem extends StatelessWidget {
             color: Theme.of(context).colorScheme.secondary,
             onPressed: () {
               cart.addItem(product);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Produto adicionado com sucesso!'),
-                  duration: Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'DESFAZER',
-                    onPressed: () {
-                      cart.removeSingleItem(product.id);
-                    },
-                  ),
-                )
-              );
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Produto adicionado com sucesso!'),
+                duration: Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'DESFAZER',
+                  onPressed: () {
+                    cart.removeSingleItem(product.id);
+                  },
+                ),
+              ));
             },
           ),
         ),

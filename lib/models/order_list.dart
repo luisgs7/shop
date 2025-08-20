@@ -10,9 +10,9 @@ import 'package:shop/utils/constants.dart';
 
 class OrderList with ChangeNotifier {
   final String token;
-  List<Order> _items = [];
+  List<Order> _items;
 
-  OrderList(this.token, this._items);
+  OrderList([this.token = '', this._items = const []]);
 
   List<Order> get items {
     return [... _items];
