@@ -7,7 +7,7 @@ import 'package:shop/exceptions/auth_exception.dart';
 class Auth extends ChangeNotifier {
   String? _token;
   String? _email;
-  String? _uid;
+  String? _userId;
   DateTime? _expiryDate;
   // static const url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBjaatVrICKkvZUWxTCP57NJzMT1g9-IbI';
   
@@ -24,8 +24,8 @@ class Auth extends ChangeNotifier {
     return isAuth ? _email : null;
   }
 
-  String? get uid {
-    return isAuth ? _uid : null;
+  String? get userId {
+    return isAuth ? _userId : null;
   }
 
   Future<void> _authenticate(
@@ -49,7 +49,7 @@ class Auth extends ChangeNotifier {
     }else{
       _token = body['idToken'];
       _email = body['email'];
-      _uid = body['localId'];
+      _userId = body['localId'];
       _expiryDate = DateTime.now().add(
         Duration(seconds: int.parse(body['expiresIn'])),
       );

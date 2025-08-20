@@ -8,11 +8,14 @@ import 'package:shop/models/product.dart';
 import 'package:shop/utils/constants.dart';
 
 class ProductList with ChangeNotifier {
+  String _token;
   List<Product> _items = [];
 
   List<Product> get items => [..._items];
   List<Product> get favoriteItems =>
       _items.where((prod) => prod.isFavorite).toList();
+
+  ProductList(this._token, this._items);
 
   // Atualiza de forma global os dados no app
   // bool _showFavoriteOnly = false;
@@ -37,7 +40,7 @@ class ProductList with ChangeNotifier {
 
   Future<void> loadProducts() async {
     _items.clear();
-    final response = await http.get(Uri.parse(Constants .PRODUCT_BASE_URL + '.json'));
+    final response = await http.get(Uri.parse(Constants .PRODUCT_BASE_URL + '.json?auth=${_token}'));
     if (response.body == 'null') {
       return;
     }
@@ -75,7 +78,7 @@ class ProductList with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final response = await http.post(
-      Uri.parse(Constants.PRODUCT_BASE_URL + '.json'),
+      Uri.parse(Constants.PRODUCT_BASE_URL + '.json?auth=${_token}'),
       body: jsonEncode(
         {
           'name': product.name,
@@ -104,7 +107,7 @@ class ProductList with ChangeNotifier {
 
     if (index >= 0) {
       await http.patch(
-        Uri.parse('${Constants.PRODUCT_BASE_URL}/${product.id}.json'),
+        Uri.parse('${Constants.PRODUCT_BASE_URL}/${product.id}.json?auth=${_token}'),
         body: jsonEncode(
           {
             'name': product.name,
@@ -128,7 +131,7 @@ class ProductList with ChangeNotifier {
       notifyListeners();
 
       final response =
-          await http.delete(Uri.parse('${Constants.PRODUCT_BASE_URL}/${product.id}.json'));
+          await http.delete(Uri.parse('${Constants.PRODUCT_BASE_URL}/${product.id}.json?auth=${_token}'));
 
       if (response.statusCode >= 400) {
         _items.insert(index, product);
