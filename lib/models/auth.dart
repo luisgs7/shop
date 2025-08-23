@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop/data/store.dart';
 import 'package:shop/exceptions/auth_exception.dart';
 
 class Auth extends ChangeNotifier {
@@ -55,6 +56,15 @@ class Auth extends ChangeNotifier {
       _expiryDate = DateTime.now().add(
         Duration(seconds: int.parse(body['expiresIn'])),
       );
+
+      // Salva os dados do usuário no SharedPreferences para login automático
+      Store.saveMap('userData', {
+        'token': _token,
+        'userId': _userId,
+        'email': _email,
+        'expiryDate': _expiryDate?.toIso8601String(),
+      });
+
       _autoLogout();
       notifyListeners();
     }
@@ -68,13 +78,31 @@ class Auth extends ChangeNotifier {
     return await _authenticate(email, password, 'signInWithPassword');
   }
 
+  Future<void> tryAutoLogin() async {
+    if(isAuth) return;
+    
+    final userData = await Store.getMap('userData');
+    if(userData.isEmpty) return;
+    
+    final expiryDate = DateTime.parse(userData['expiryDate']);
+    if(expiryDate.isBefore(DateTime.now())) return;
+
+    _token = userData['token'];
+    _email = userData['email'];
+    _userId = userData['userId'];
+    _expiryDate = expiryDate;
+    
+    _autoLogout();
+    notifyListeners();
+  }
+
   void logout() {
     _token = null;
     _email = null;
     _userId = null;
     _expiryDate = null;
     _clearLogoutTimer();
-    notifyListeners();
+    Store.remove('userData').then((_) => notifyListeners());
   }
 
   void _clearLogoutTimer() {
